@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
+	"image"
 	"image/color"
 	"log"
 	"math"
@@ -12,18 +15,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
-
-func floorDiv(x, y int) int {
-	d := x / y
-	if d*y == x || x >= 0 {
-		return d
-	}
-	return d - 1
-}
-
-func floorMod(x, y int) int {
-	return x - floorDiv(x, y)*y
-}
 
 const (
 	speed = 2
@@ -46,11 +37,21 @@ const (
 var (
 	surfInterval int
 	surfGap      int
+
+	//go:embed resources/tiles.png
+	Tiles_png  []byte
+	TilesImage *ebiten.Image
 )
 
 func init() {
 	surfInterval = 7
 	surfGap = 8
+
+	img, _, err := image.Decode(bytes.NewReader(Tiles_png))
+	if err != nil {
+		log.Fatal(err)
+	}
+	TilesImage = ebiten.NewImageFromImage(img)
 }
 
 type waveType int
@@ -356,18 +357,37 @@ func (g *Game) drawTiles(screen *ebiten.Image) {
 
 func (g *Game) drawWaves(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
+	op2 := &ebiten.DrawImageOptions{}
 	for _, w := range waveAreas {
 		op.GeoM.Reset()
 		op.GeoM.Translate(0, float64(w.Y+g.cameraY))
 		nw := ebiten.NewImage(waveAreaWidth, waveAreaHeight)
-		switch w.WaveType {
-		case waveToLeft:
-			nw.Fill(color.RGBA{142, 186, 241, 255})
-		case waveToRight:
-			nw.Fill(color.RGBA{187, 214, 246, 255})
+		for i := 0; i < waveAreaWidth/tileSize; i++ {
+			for j := 0; j < waveAreaHeight/tileSize; j++ {
+				op2.GeoM.Reset()
+				op2.GeoM.Translate(float64(i*tileSize), float64(j*tileSize))
+				switch w.WaveType {
+				case waveToLeft:
+					//nw.Fill(color.RGBA{142, 186, 241, 255})
+					if g.cameraY/speed%120 < 60 {
+						nw.DrawImage(TilesImage.SubImage(image.Rect(0, 0, tileSize, tileSize)).(*ebiten.Image), op2)
+					} else {
+						nw.DrawImage(TilesImage.SubImage(image.Rect(0, tileSize, tileSize, tileSize*2)).(*ebiten.Image), op2)
+					}
+				case waveToRight:
+					//nw.Fill(color.RGBA{187, 214, 246, 255})
+					if g.cameraY/speed%120 < 60 {
+						nw.DrawImage(TilesImage.SubImage(image.Rect(tileSize, 0, tileSize*2, tileSize)).(*ebiten.Image), op2)
+					} else {
+						nw.DrawImage(TilesImage.SubImage(image.Rect(tileSize, tileSize, tileSize*2, tileSize*2)).(*ebiten.Image), op2)
+					}
+				}
+			}
 		}
 		screen.DrawImage(nw, op)
 	}
+
+	//screen.DrawImage(TilesImage.SubImage(image.Rect(0, 0, tileSize, tileSize)).(*ebiten.Image), op2)
 }
 
 func (g *Game) getWaveDirection() int {
