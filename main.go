@@ -26,6 +26,9 @@ func floorMod(x, y int) int {
 }
 
 const (
+	//speed        = 2
+	speed = 5
+
 	screenWidth  = 480
 	screenHeight = 640
 
@@ -36,7 +39,19 @@ const (
 	playerHeight = 32
 
 	tileSize = 32
+
+	surfOffset = 12
 )
+
+var (
+	surfInterval int
+	surfGap      int
+)
+
+func init() {
+	surfInterval = 7
+	surfGap = 8
+}
 
 type waveType int
 
@@ -68,6 +83,7 @@ func init() {
 
 	initWaveImage()
 
+	//init waves
 	for i := 0; i < 2; i++ {
 		t := waveToLeft
 		if i%2 == 0 {
@@ -76,6 +92,14 @@ func init() {
 		waveAreas = append(waveAreas, &waveArea{
 			Y:        -waveAreaHeight * i,
 			WaveType: t,
+		})
+	}
+
+	//init surfs
+	for i := 0; i < (screenHeight*3/tileSize-surfOffset)/(surfInterval+1); i++ {
+		surfs = append(surfs, &surf{
+			Y:         surfOffset*tileSize + i*(surfInterval+1)*tileSize,
+			LeftWidth: genSurfLeftWidth(),
 		})
 	}
 }
@@ -164,8 +188,8 @@ func (g *Game) Update() error {
 			g.mode = ModeGame
 		}
 	case ModeGame:
-		g.cameraY += 2
-		g.y16 += 2 * 16
+		g.cameraY += speed
+		g.y16 += speed * 16
 
 		if g.isRightJustPressed() {
 			g.vx16 = 96
@@ -192,8 +216,8 @@ func (g *Game) Update() error {
 			g.vx16 = -96
 		}
 
-		//Add wave
 		if g.cameraY%screenHeight == 0 {
+			//Add wave
 			t := waveToLeft
 			if rand.IntN(2)%2 == 0 {
 				t = waveToRight
@@ -204,6 +228,24 @@ func (g *Game) Update() error {
 			})
 			waveAreas = waveAreas[1:]
 		}
+
+		if g.cameraY%((surfInterval+1)*tileSize) < speed {
+			//Add surfs
+			lastY := surfs[len(surfs)-1].Y
+			surfs = append(surfs, &surf{
+				Y:         lastY + (surfInterval+1)*tileSize,
+				LeftWidth: genSurfLeftWidth(),
+			})
+
+			rmCount := 0
+			for _, s := range surfs {
+				if screenHeight-s.Y+g.cameraY > screenHeight {
+					rmCount++
+				}
+			}
+			surfs = surfs[rmCount:]
+		}
+
 		//if g.hit() {
 		//	g.mode = ModeGameOver
 		//}
@@ -220,9 +262,21 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawWaves(screen)
 
+	g.drawSurfs(screen)
 	if g.mode == ModeGame {
 		g.drawPlayer(screen)
 	}
+
+	sampleLog(screen,
+		fmt.Sprintf(
+			"Y:%v, vx: %v\n"+
+				"waves: %v, surfs: %v",
+			g.cameraY,
+			g.vx16,
+			len(waveAreas),
+			len(surfs),
+		),
+	)
 }
 
 func (g *Game) hit() bool {
@@ -295,7 +349,6 @@ func (g *Game) drawWaves(screen *ebiten.Image) {
 		}
 		screen.DrawImage(nw, op)
 	}
-	sampleLog(screen, fmt.Sprintf("Y:%v\nlen: %v, vx: %v", g.cameraY, len(waveAreas), g.vx16))
 }
 
 func (g *Game) getWaveDirection() int {
@@ -315,6 +368,39 @@ func (g *Game) getWaveDirection() int {
 		}
 	}
 	return 0
+}
+
+type surf = struct {
+	Y         int
+	LeftWidth int
+}
+
+var (
+	surfs []*surf
+)
+
+func (g *Game) drawSurfs(screen *ebiten.Image) {
+	op := &ebiten.DrawImageOptions{}
+	for _, s := range surfs {
+		y := float64(screenHeight - tileSize - s.Y + g.cameraY)
+
+		op.GeoM.Reset()
+		op.GeoM.Translate(0, y)
+		sl := ebiten.NewImage(s.LeftWidth*tileSize, tileSize)
+		sl.Fill(color.RGBA{232, 241, 252, 255})
+		screen.DrawImage(sl, op)
+
+		op.GeoM.Reset()
+		op.GeoM.Translate(float64(s.LeftWidth*tileSize+surfGap*tileSize), y)
+		sr := ebiten.NewImage(screenWidth-s.LeftWidth*tileSize+surfGap*tileSize, tileSize)
+		sr.Fill(color.RGBA{232, 241, 252, 255})
+		screen.DrawImage(sr, op)
+	}
+}
+
+func genSurfLeftWidth() int {
+	maxLeftWidth := screenWidth/tileSize - surfGap - 1
+	return rand.IntN(maxLeftWidth) + 1
 }
 
 func sampleLog(screen *ebiten.Image, message string) {
