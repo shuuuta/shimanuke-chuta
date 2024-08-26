@@ -26,8 +26,8 @@ func floorMod(x, y int) int {
 }
 
 const (
-	//speed        = 2
-	speed = 5
+	speed = 2
+	//speed = 5
 
 	screenWidth  = 480
 	screenHeight = 640
@@ -98,7 +98,7 @@ func init() {
 	//init surfs
 	for i := 0; i < (screenHeight*3/tileSize-surfOffset)/(surfInterval+1); i++ {
 		surfs = append(surfs, &surf{
-			Y:         surfOffset*tileSize + i*(surfInterval+1)*tileSize,
+			Y:         screenHeight - tileSize - (surfOffset*tileSize + i*(surfInterval+1)*tileSize),
 			LeftWidth: genSurfLeftWidth(),
 		})
 	}
@@ -233,22 +233,22 @@ func (g *Game) Update() error {
 			//Add surfs
 			lastY := surfs[len(surfs)-1].Y
 			surfs = append(surfs, &surf{
-				Y:         lastY + (surfInterval+1)*tileSize,
+				Y:         lastY - (surfInterval+1)*tileSize,
 				LeftWidth: genSurfLeftWidth(),
 			})
 
 			rmCount := 0
 			for _, s := range surfs {
-				if screenHeight-s.Y+g.cameraY > screenHeight {
+				if s.Y+g.cameraY > screenHeight {
 					rmCount++
 				}
 			}
 			surfs = surfs[rmCount:]
 		}
 
-		//if g.hit() {
-		//	g.mode = ModeGameOver
-		//}
+		if g.hit() {
+			//g.mode = ModeGameOver
+		}
 
 	case ModeGameOver:
 		if g.isSelectJustPressed() {
@@ -269,8 +269,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	sampleLog(screen,
 		fmt.Sprintf(
-			"Y:%v, vx: %v\n"+
+			"Hit: %v, "+
+				"Y:%v, vx: %v\n"+
 				"waves: %v, surfs: %v",
+			g.hit(),
 			g.cameraY,
 			g.vx16,
 			len(waveAreas),
@@ -283,21 +285,38 @@ func (g *Game) hit() bool {
 	if g.mode != ModeGame {
 		return false
 	}
-	const (
-		playerW = 60
-		playerH = 30
-	)
-	//w, h := playerImage.Bounds().Dx(), playerImage.Bounds().Dy()
-	h := playerImage.Bounds().Dx()
-	//x0 := floorDiv(g.x16, 16) + (w-playerW)/2
-	y0 := floorDiv(g.y16, 16) + (h-playerH)/2
-	//x1 := x0 + playerW
-	y1 := y0 + playerH
-	if y0 < -tileSize*4 {
+
+	x0 := int(math.Floor(float64(g.x16 / 16)))
+	x1 := x0 + playerImage.Bounds().Dx()
+	y0 := int(math.Floor(float64(g.y16/16))) - g.cameraY
+	y1 := y0 + playerImage.Bounds().Dy()
+
+	//out of screen
+	if x0 <= 0 {
 		return true
 	}
-	if y1 >= screenHeight-tileSize {
+	if x1 >= screenWidth {
 		return true
+	}
+
+	//hit surf
+	for _, s := range surfs {
+		sy0 := s.Y + g.cameraY
+		sy1 := sy0 + tileSize
+
+		rx0 := 0
+		rx1 := s.LeftWidth * tileSize
+		lx0 := rx1 + surfGap*tileSize
+		lx1 := screenWidth
+
+		if y0 < sy1 && sy0 < y1 {
+			if x0 < rx1 && rx0 < x1 {
+				return true
+			}
+			if x0 < lx1 && lx0 < x1 {
+				return true
+			}
+		}
 	}
 	return false
 }
@@ -382,7 +401,7 @@ var (
 func (g *Game) drawSurfs(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	for _, s := range surfs {
-		y := float64(screenHeight - tileSize - s.Y + g.cameraY)
+		y := float64(s.Y + g.cameraY)
 
 		op.GeoM.Reset()
 		op.GeoM.Translate(0, y)
@@ -405,7 +424,7 @@ func genSurfLeftWidth() int {
 
 func sampleLog(screen *ebiten.Image, message string) {
 	const (
-		mWidth  = 128
+		mWidth  = 128 * 2
 		row     = 2
 		mHeight = 16 * row
 		marginB = 8 * row
