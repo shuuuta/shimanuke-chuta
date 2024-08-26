@@ -386,8 +386,6 @@ func (g *Game) drawWaves(screen *ebiten.Image) {
 		}
 		screen.DrawImage(nw, op)
 	}
-
-	//screen.DrawImage(TilesImage.SubImage(image.Rect(0, 0, tileSize, tileSize)).(*ebiten.Image), op2)
 }
 
 func (g *Game) getWaveDirection() int {
@@ -420,19 +418,38 @@ var (
 
 func (g *Game) drawSurfs(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
+	op2 := &ebiten.DrawImageOptions{}
 	for _, s := range surfs {
 		y := float64(s.Y + g.cameraY)
 
 		op.GeoM.Reset()
 		op.GeoM.Translate(0, y)
 		sl := ebiten.NewImage(s.LeftWidth*tileSize, tileSize)
-		sl.Fill(color.RGBA{232, 241, 252, 255})
+		//sl.Fill(color.RGBA{232, 241, 252, 255})
+		for i := 0; i < s.LeftWidth; i++ {
+			op2.GeoM.Reset()
+			op2.GeoM.Translate(float64(i*tileSize), 0)
+			if g.cameraY/speed%60 < 30 {
+				sl.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, 0, tileSize*3, tileSize)).(*ebiten.Image), op2)
+			} else {
+				sl.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, tileSize, tileSize*3, tileSize*2)).(*ebiten.Image), op2)
+			}
+		}
 		screen.DrawImage(sl, op)
 
 		op.GeoM.Reset()
 		op.GeoM.Translate(float64(s.LeftWidth*tileSize+surfGap*tileSize), y)
 		sr := ebiten.NewImage(screenWidth-s.LeftWidth*tileSize+surfGap*tileSize, tileSize)
-		sr.Fill(color.RGBA{232, 241, 252, 255})
+		//sr.Fill(color.RGBA{232, 241, 252, 255})
+		for i := 0; i < screenWidth/tileSize-s.LeftWidth-surfGap; i++ {
+			op2.GeoM.Reset()
+			op2.GeoM.Translate(float64(i*tileSize), 0)
+			if g.cameraY/speed%60 < 30 {
+				sr.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, 0, tileSize*3, tileSize)).(*ebiten.Image), op2)
+			} else {
+				sr.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, tileSize, tileSize*3, tileSize*2)).(*ebiten.Image), op2)
+			}
+		}
 		screen.DrawImage(sr, op)
 	}
 }
