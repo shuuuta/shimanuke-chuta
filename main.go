@@ -58,7 +58,7 @@ func init() {
 }
 
 const (
-	fontSize      = 20
+	fontSize      = 24
 	titleFontSize = fontSize * 3
 	smallFontSize = fontSize / 0.8
 )
@@ -191,29 +191,29 @@ func (g *Game) init() {
 	//init Stage
 	g.stages = Stages{
 		Stage{
-			name:         "Hachijojima",
+			name:         "八丈島",
 			dist:         0,
 			speed:        4,
 			surfGap:      8,
 			surfInterval: 7,
 		}, Stage{
-			name:         "Mikurajima",
+			name:         "御蔵島",
 			dist:         83,
-			speed:        6,
-			surfGap:      6,
-			surfInterval: 6,
+			speed:        4,
+			surfGap:      7,
+			surfInterval: 7,
 		}, Stage{
-			name:         "Miyakejima",
+			name:         "三宅島",
 			dist:         106,
-			speed:        9,
-			surfGap:      4,
-			surfInterval: 5,
+			speed:        5,
+			surfGap:      7,
+			surfInterval: 7,
 		}, Stage{
-			name:         "Kouzushima",
+			name:         "神津島",
 			dist:         133,
-			speed:        11,
-			surfGap:      2,
-			surfInterval: 3,
+			speed:        6,
+			surfGap:      7,
+			surfInterval: 7,
 		},
 	}
 	g.setStage()
@@ -320,7 +320,7 @@ func (g *Game) Update() error {
 		}
 
 		if g.hit() {
-			//g.mode = ModeGameOver
+			g.mode = ModeGameOver
 		}
 
 	case ModeGameOver:
@@ -340,7 +340,6 @@ func (g *Game) setStage() {
 		}
 	}
 	g.speed = s.speed
-	//g.speed = 5
 	g.surfInterval = s.surfInterval
 	g.surfGap = s.surfGap
 	g.location = s.name
@@ -348,14 +347,19 @@ func (g *Game) setStage() {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawWaves(screen)
-
 	g.drawSurfs(screen)
+
+	if g.mode == ModeStartMenu {
+		g.drawStartMenu(screen)
+	}
+
 	if g.mode == ModeGame {
 		g.drawPlayer(screen)
 	}
 
-	if g.mode == ModeStartMenu {
-		g.drawStartMenu(screen)
+	if g.mode == ModeGameOver {
+		g.drawPlayer(screen)
+		g.drawGameOver(screen)
 	}
 
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("location: %v", g.location))
