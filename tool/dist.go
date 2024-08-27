@@ -29,7 +29,7 @@ var distFiles = []string{
 // Note that files that start with a dot are excluded even if they are under distDir.
 // To include such files, add them to distFiles individually.
 var distDirs = []string{
-	"asset",
+	"resources",
 }
 
 // isDist reports whether the name is part of the distribution.
