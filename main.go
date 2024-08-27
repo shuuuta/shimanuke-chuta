@@ -73,7 +73,7 @@ var (
 	misakiFontTTF []byte
 	misakiFont    *text.GoTextFaceSource
 
-	//go:embed resources/k8x12s.ttf
+	//go:embed resources/k8x12S.ttf
 	k8x12sFontTTF []byte
 	k8x12sFont    *text.GoTextFaceSource
 )
