@@ -17,9 +17,6 @@ import (
 )
 
 const (
-	speed = 2
-	//speed = 5
-
 	screenWidth  = 480
 	screenHeight = 640
 
@@ -84,14 +81,6 @@ var (
 )
 
 func init() {
-	//playerImage = ebiten.NewImage(playerWidth, playerHeight)
-	//playerImage.Fill(color.RGBA{0xa0, 0xc0, 0x80, 0xff})
-	//vector.DrawFilledCircle(playerImage, 32, 32, 16, color.RGBA{0xa0, 0xc0, 0x80, 0xff}, true)
-
-	//tilesImage = ebiten.NewImage(tileSize, tileSize)
-	//tilesImage.Fill(color.RGBA{0xa0, 0x80, 0xc0, 0xff})
-	//vector.DrawFilledCircle(tilesImage, 0, 0, 16, color.RGBA{0xa0, 0xc0, 0x80, 0xff}, true)
-
 	initWaveImage()
 
 	//init waves
@@ -115,6 +104,16 @@ func init() {
 	}
 }
 
+type Stage struct {
+	name         string
+	dist         int
+	speed        int
+	surfGap      int
+	surfInterval int
+}
+
+type Stages []Stage
+
 func initWaveImage() {
 	waveImage = ebiten.NewImage(tileSize, tileSize)
 	vector.DrawFilledCircle(waveImage, tileSize, tileSize, tileSize, color.RGBA{26, 106, 204, 255}, true)
@@ -131,7 +130,11 @@ const (
 )
 
 type Game struct {
-	mode Mode
+	mode     Mode
+	stages   Stages
+	location string
+
+	speed int
 
 	// Counter
 	countAfterClick int
@@ -189,6 +192,35 @@ func (g *Game) init() {
 	g.y16 = (screenHeight - playerHeight - 64) * 16
 	g.cameraX = 0
 	g.cameraY = 0
+
+	g.stages = Stages{
+		Stage{
+			name:         "Hachijojima",
+			dist:         0,
+			speed:        2,
+			surfGap:      8,
+			surfInterval: 7,
+		}, Stage{
+			name:         "Mikurajima",
+			dist:         83,
+			speed:        4,
+			surfGap:      8,
+			surfInterval: 7,
+		}, Stage{
+			name:         "Miyakejima",
+			dist:         106,
+			speed:        4,
+			surfGap:      8,
+			surfInterval: 7,
+		}, Stage{
+			name:         "Kouzushima",
+			dist:         133,
+			speed:        4,
+			surfGap:      8,
+			surfInterval: 7,
+		},
+	}
+	g.setStage()
 }
 
 func NewGame() ebiten.Game {
@@ -204,9 +236,11 @@ func (g *Game) Update() error {
 			g.mode = ModeGame
 		}
 	case ModeGame:
+		g.setStage()
+
 		g.countAfterClick += 1
-		g.cameraY += speed
-		g.y16 += speed * 16
+		g.cameraY += g.speed
+		g.y16 += g.speed * 16
 
 		if g.isRightJustPressed() {
 			g.shipDir = 1
@@ -250,7 +284,7 @@ func (g *Game) Update() error {
 			waveAreas = waveAreas[1:]
 		}
 
-		if g.cameraY%((surfInterval+1)*tileSize) < speed {
+		if g.cameraY%((surfInterval+1)*tileSize) < g.speed {
 			//Add surfs
 			lastY := surfs[len(surfs)-1].Y
 			surfs = append(surfs, &surf{
@@ -280,6 +314,18 @@ func (g *Game) Update() error {
 	return nil
 }
 
+func (g *Game) setStage() {
+	var s Stage
+	for _, v := range g.stages {
+		if v.dist*10 <= g.cameraY {
+			s = v
+		}
+	}
+	//g.speed = s.speed
+	g.speed = 2
+	g.location = s.name
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawWaves(screen)
 
@@ -287,6 +333,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	if g.mode == ModeGame {
 		g.drawPlayer(screen)
 	}
+
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("location: %v", g.location))
 
 	sampleLog(screen,
 		fmt.Sprintf(
@@ -341,15 +389,16 @@ func (g *Game) hit() bool {
 	}
 	return false
 }
+
 func (g *Game) drawPlayer(screen *ebiten.Image) {
 	img := ebiten.NewImage(playerWidth, playerHeight)
 	op := &ebiten.DrawImageOptions{}
 
 	if g.countAfterClick < 30 {
-		px := int(math.Floor(float64(g.cameraY / speed / 2 % 4)))
+		px := int(math.Floor(float64(g.cameraY / g.speed / 2 % 4)))
 		img.DrawImage(PlayerImage.SubImage(image.Rect(tileSize*px, tileSize*g.shipDir, tileSize*(px+1), tileSize*(g.shipDir+1))).(*ebiten.Image), nil)
 	} else {
-		px := int(math.Floor(float64(g.cameraY / speed / 10 % 4)))
+		px := int(math.Floor(float64(g.cameraY / g.speed / 10 % 4)))
 		img.DrawImage(PlayerImage.SubImage(image.Rect(tileSize*px, 0, tileSize*(px+1), tileSize)).(*ebiten.Image), nil)
 	}
 
@@ -376,14 +425,14 @@ func (g *Game) drawWaves(screen *ebiten.Image) {
 				switch w.WaveType {
 				case waveToLeft:
 					//nw.Fill(color.RGBA{142, 186, 241, 255})
-					if g.cameraY/speed%120 < 60 {
+					if g.cameraY/g.speed%120 < 60 {
 						nw.DrawImage(TilesImage.SubImage(image.Rect(0, 0, tileSize, tileSize)).(*ebiten.Image), op2)
 					} else {
 						nw.DrawImage(TilesImage.SubImage(image.Rect(0, tileSize, tileSize, tileSize*2)).(*ebiten.Image), op2)
 					}
 				case waveToRight:
 					//nw.Fill(color.RGBA{187, 214, 246, 255})
-					if g.cameraY/speed%120 < 60 {
+					if g.cameraY/g.speed%120 < 60 {
 						nw.DrawImage(TilesImage.SubImage(image.Rect(tileSize, 0, tileSize*2, tileSize)).(*ebiten.Image), op2)
 					} else {
 						nw.DrawImage(TilesImage.SubImage(image.Rect(tileSize, tileSize, tileSize*2, tileSize*2)).(*ebiten.Image), op2)
@@ -436,7 +485,7 @@ func (g *Game) drawSurfs(screen *ebiten.Image) {
 		for i := 0; i < s.LeftWidth; i++ {
 			op2.GeoM.Reset()
 			op2.GeoM.Translate(float64(i*tileSize), 0)
-			if g.cameraY/speed%60 < 30 {
+			if g.cameraY/g.speed%60 < 30 {
 				sl.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, 0, tileSize*3, tileSize)).(*ebiten.Image), op2)
 			} else {
 				sl.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, tileSize, tileSize*3, tileSize*2)).(*ebiten.Image), op2)
@@ -451,7 +500,7 @@ func (g *Game) drawSurfs(screen *ebiten.Image) {
 		for i := 0; i < screenWidth/tileSize-s.LeftWidth-surfGap; i++ {
 			op2.GeoM.Reset()
 			op2.GeoM.Translate(float64(i*tileSize), 0)
-			if g.cameraY/speed%60 < 30 {
+			if g.cameraY/g.speed%60 < 30 {
 				sr.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, 0, tileSize*3, tileSize)).(*ebiten.Image), op2)
 			} else {
 				sr.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, tileSize, tileSize*3, tileSize*2)).(*ebiten.Image), op2)
