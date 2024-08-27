@@ -13,7 +13,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
@@ -32,8 +31,6 @@ const (
 )
 
 var (
-	waveImage *ebiten.Image
-
 	//go:embed resources/tiles.png
 	Tiles_png  []byte
 	TilesImage *ebiten.Image
@@ -45,8 +42,6 @@ var (
 )
 
 func init() {
-	initWaveImage()
-
 	timg, _, err := image.Decode(bytes.NewReader(Tiles_png))
 	if err != nil {
 		log.Fatal(err)
@@ -73,10 +68,6 @@ type waveArea = struct {
 	WaveType waveType
 }
 
-func init() {
-
-}
-
 type Stage struct {
 	name         string
 	dist         int
@@ -86,13 +77,6 @@ type Stage struct {
 }
 
 type Stages []Stage
-
-func initWaveImage() {
-	waveImage = ebiten.NewImage(tileSize, tileSize)
-	vector.DrawFilledCircle(waveImage, tileSize, tileSize, tileSize, color.RGBA{26, 106, 204, 255}, true)
-	vector.DrawFilledCircle(waveImage, tileSize, tileSize, tileSize*2/3, color.RGBA{51, 131, 229, 255}, true)
-	vector.DrawFilledCircle(waveImage, tileSize, tileSize, tileSize/3, color.RGBA{97, 159, 235, 255}, true)
-}
 
 type Mode int
 
@@ -485,7 +469,7 @@ func (g *Game) drawSurfs(screen *ebiten.Image) {
 		op.GeoM.Reset()
 		op.GeoM.Translate(0, y)
 		sl := ebiten.NewImage(s.LeftWidth*tileSize, tileSize)
-		//sl.Fill(color.RGBA{232, 241, 252, 255})
+
 		for i := 0; i < s.LeftWidth; i++ {
 			op2.GeoM.Reset()
 			op2.GeoM.Translate(float64(i*tileSize), 0)
@@ -500,7 +484,7 @@ func (g *Game) drawSurfs(screen *ebiten.Image) {
 		op.GeoM.Reset()
 		op.GeoM.Translate(float64(s.LeftWidth*tileSize+s.Gap*tileSize), y)
 		sr := ebiten.NewImage(screenWidth-s.LeftWidth*tileSize+s.Gap*tileSize, tileSize)
-		//sr.Fill(color.RGBA{232, 241, 252, 255})
+
 		for i := 0; i < screenWidth/tileSize-s.LeftWidth-s.Gap; i++ {
 			op2.GeoM.Reset()
 			op2.GeoM.Translate(float64(i*tileSize), 0)
