@@ -411,7 +411,7 @@ func (g *Game) hit() bool {
 
 		rx0 := 0
 		rx1 := s.LeftWidth * tileSize
-		lx0 := rx1 + g.surfGap*tileSize
+		lx0 := rx1 + s.Gap*tileSize
 		lx1 := screenWidth
 
 		if y0 < sy1 && sy0 < y1 {
