@@ -1,4 +1,4 @@
-module github.com/shuuuta/shumanuke-chuta
+module github.com/shuuuta/shimanuke-chuta
 
 go 1.21.5
 
