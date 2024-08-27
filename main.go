@@ -18,6 +18,7 @@ import (
 
 var (
 	muteki = false
+	dev    = true
 )
 
 const (
@@ -369,20 +370,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.drawGameOver(screen)
 	}
 
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("location: %v", g.location))
-
-	sampleLog(screen,
-		fmt.Sprintf(
-			"Hit: %v, "+
-				"Y:%v, vx: %v\n"+
-				"waves: %v, surfs: %v",
-			g.hit(),
-			g.cameraY,
-			g.vx16,
-			len(g.waveAreas),
-			len(g.surfs),
-		),
-	)
+	if dev {
+		sampleLog(screen,
+			fmt.Sprintf(
+				"Hit: %v, "+
+					"Y:%v, vx: %v\n"+
+					"waves: %v, surfs: %v",
+				g.hit(),
+				g.cameraY,
+				g.vx16,
+				len(g.waveAreas),
+				len(g.surfs),
+			),
+		)
+	}
 }
 
 func (g *Game) hit() bool {
