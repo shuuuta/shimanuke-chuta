@@ -13,6 +13,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 const (
@@ -56,6 +57,36 @@ func init() {
 	PlayerRow = 0
 }
 
+const (
+	fontSize      = 20
+	titleFontSize = fontSize * 3
+	smallFontSize = fontSize / 0.8
+)
+
+var (
+	//go:embed resources/misaki_gothic_2nd.ttf
+	misakiFontTTF []byte
+	misakiFont    *text.GoTextFaceSource
+
+	//go:embed resources/k8x12s.ttf
+	k8x12sFontTTF []byte
+	k8x12sFont    *text.GoTextFaceSource
+)
+
+func init() {
+	m, err := text.NewGoTextFaceSource(bytes.NewReader(misakiFontTTF))
+	if err != nil {
+		log.Fatal(err)
+	}
+	misakiFont = m
+
+	k, err := text.NewGoTextFaceSource(bytes.NewReader(k8x12sFontTTF))
+	if err != nil {
+		log.Fatal(err)
+	}
+	k8x12sFont = k
+}
+
 type waveType int
 
 const (
@@ -81,7 +112,7 @@ type Stages []Stage
 type Mode int
 
 const (
-	ModeTitle Mode = iota
+	ModeStartMenu Mode = iota
 	ModeGame
 	ModeGameOver
 )
@@ -217,7 +248,7 @@ func NewGame() ebiten.Game {
 func (g *Game) Update() error {
 	g.counter++
 	switch g.mode {
-	case ModeTitle:
+	case ModeStartMenu:
 		if g.isSelectJustPressed() {
 			g.mode = ModeGame
 		}
@@ -295,7 +326,7 @@ func (g *Game) Update() error {
 	case ModeGameOver:
 		if g.isSelectJustPressed() {
 			g.init()
-			g.mode = ModeTitle
+			g.mode = ModeStartMenu
 		}
 	}
 	return nil
@@ -321,6 +352,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawSurfs(screen)
 	if g.mode == ModeGame {
 		g.drawPlayer(screen)
+	}
+
+	if g.mode == ModeStartMenu {
+		g.drawStartMenu(screen)
 	}
 
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("location: %v", g.location))
