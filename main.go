@@ -41,17 +41,29 @@ var (
 	//go:embed resources/tiles.png
 	Tiles_png  []byte
 	TilesImage *ebiten.Image
+
+	//go:embed resources/player.png
+	Player_png  []byte
+	PlayerImage *ebiten.Image
+	PlayerRow   int
 )
 
 func init() {
 	surfInterval = 7
 	surfGap = 8
 
-	img, _, err := image.Decode(bytes.NewReader(Tiles_png))
+	timg, _, err := image.Decode(bytes.NewReader(Tiles_png))
 	if err != nil {
 		log.Fatal(err)
 	}
-	TilesImage = ebiten.NewImageFromImage(img)
+	TilesImage = ebiten.NewImageFromImage(timg)
+
+	pimg, _, err := image.Decode(bytes.NewReader(Player_png))
+	if err != nil {
+		log.Fatal(err)
+	}
+	PlayerImage = ebiten.NewImageFromImage(pimg)
+	PlayerRow = 0
 }
 
 type waveType int
@@ -67,20 +79,18 @@ type waveArea = struct {
 }
 
 var (
-	playerImage *ebiten.Image
-	tilesImage  *ebiten.Image
-	waveImage   *ebiten.Image
-	waveAreas   []*waveArea
+	waveImage *ebiten.Image
+	waveAreas []*waveArea
 )
 
 func init() {
-	playerImage = ebiten.NewImage(playerWidth, playerHeight)
-	playerImage.Fill(color.RGBA{0xa0, 0xc0, 0x80, 0xff})
-	vector.DrawFilledCircle(playerImage, 32, 32, 16, color.RGBA{0xa0, 0xc0, 0x80, 0xff}, true)
+	//playerImage = ebiten.NewImage(playerWidth, playerHeight)
+	//playerImage.Fill(color.RGBA{0xa0, 0xc0, 0x80, 0xff})
+	//vector.DrawFilledCircle(playerImage, 32, 32, 16, color.RGBA{0xa0, 0xc0, 0x80, 0xff}, true)
 
-	tilesImage = ebiten.NewImage(tileSize, tileSize)
-	tilesImage.Fill(color.RGBA{0xa0, 0x80, 0xc0, 0xff})
-	vector.DrawFilledCircle(tilesImage, 0, 0, 16, color.RGBA{0xa0, 0xc0, 0x80, 0xff}, true)
+	//tilesImage = ebiten.NewImage(tileSize, tileSize)
+	//tilesImage.Fill(color.RGBA{0xa0, 0x80, 0xc0, 0xff})
+	//vector.DrawFilledCircle(tilesImage, 0, 0, 16, color.RGBA{0xa0, 0xc0, 0x80, 0xff}, true)
 
 	initWaveImage()
 
@@ -123,6 +133,9 @@ const (
 type Game struct {
 	mode Mode
 
+	// Counter
+	countAfterClick int
+
 	// Camera
 	cameraX int
 	cameraY int
@@ -131,6 +144,8 @@ type Game struct {
 	x16  int
 	y16  int
 	vx16 int
+
+	shipDir int
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -189,13 +204,18 @@ func (g *Game) Update() error {
 			g.mode = ModeGame
 		}
 	case ModeGame:
+		g.countAfterClick += 1
 		g.cameraY += speed
 		g.y16 += speed * 16
 
 		if g.isRightJustPressed() {
+			g.shipDir = 1
+			g.countAfterClick = 0
 			g.vx16 = 96
 		}
 		if g.isLeftJustPressed() {
+			g.shipDir = 2
+			g.countAfterClick = 0
 			g.vx16 = -96
 		}
 
@@ -288,9 +308,9 @@ func (g *Game) hit() bool {
 	}
 
 	x0 := int(math.Floor(float64(g.x16 / 16)))
-	x1 := x0 + playerImage.Bounds().Dx()
+	x1 := x0 + playerWidth
 	y0 := int(math.Floor(float64(g.y16/16))) - g.cameraY
-	y1 := y0 + playerImage.Bounds().Dy()
+	y1 := y0 + playerHeight
 
 	//out of screen
 	if x0 <= 0 {
@@ -322,37 +342,24 @@ func (g *Game) hit() bool {
 	return false
 }
 func (g *Game) drawPlayer(screen *ebiten.Image) {
+	img := ebiten.NewImage(playerWidth, playerHeight)
 	op := &ebiten.DrawImageOptions{}
-	w, h := playerImage.Bounds().Dx(), playerImage.Bounds().Dy()
-	op.GeoM.Translate(-float64(w)/2.0, -float64(h)/2.0)
+
+	if g.countAfterClick < 30 {
+		px := int(math.Floor(float64(g.cameraY / speed / 2 % 4)))
+		img.DrawImage(PlayerImage.SubImage(image.Rect(tileSize*px, tileSize*g.shipDir, tileSize*(px+1), tileSize*(g.shipDir+1))).(*ebiten.Image), nil)
+	} else {
+		px := int(math.Floor(float64(g.cameraY / speed / 10 % 4)))
+		img.DrawImage(PlayerImage.SubImage(image.Rect(tileSize*px, 0, tileSize*(px+1), tileSize)).(*ebiten.Image), nil)
+	}
+
+	op.GeoM.Translate(-float64(playerWidth)/2.0, -float64(playerHeight)/2.0)
 	op.GeoM.Rotate(float64(g.vx16) / 96.0 * math.Pi / 6)
-	op.GeoM.Translate(float64(w)/2.0, float64(h)/2.0)
+	op.GeoM.Translate(float64(playerWidth)/2.0, float64(playerHeight)/2.0)
 	op.GeoM.Translate(float64(g.x16/16)-float64(g.cameraX), float64(g.y16/16)-float64(g.cameraY))
 	op.Filter = ebiten.FilterLinear
 
-	screen.DrawImage(playerImage, op)
-}
-
-func (g *Game) drawTiles(screen *ebiten.Image) {
-	const (
-		nx           = screenWidth / tileSize
-		ny           = screenHeight / tileSize
-		pipeTileSrcX = 128
-		pipeTileSrcY = 192
-	)
-
-	op := &ebiten.DrawImageOptions{}
-
-	for i := -2; i < nx+1; i++ {
-		// ground
-		op.GeoM.Reset()
-		//op.GeoM.Translate(float64(i*tileSize-floorMod(g.cameraX, tileSize)),
-		//	float64((ny-1)*tileSize-floorMod(g.cameraY, tileSize)))
-		op.GeoM.Translate(float64(i*tileSize),
-			float64((ny-1)*tileSize))
-
-		screen.DrawImage(tilesImage, op)
-	}
+	screen.DrawImage(img, op)
 }
 
 func (g *Game) drawWaves(screen *ebiten.Image) {
