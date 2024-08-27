@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	muteki = false
+	muteki = true
 	dev    = true
 )
 
