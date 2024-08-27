@@ -16,6 +16,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
+var (
+	muteki = false
+)
+
 const (
 	screenWidth  = 480
 	screenHeight = 640
@@ -141,6 +145,7 @@ type Game struct {
 
 	//waves
 	waveAreas    []*waveArea
+	surfs        []*surf
 	surfInterval int
 	surfGap      int
 }
@@ -219,6 +224,7 @@ func (g *Game) init() {
 	g.setStage()
 
 	//init waves
+	g.waveAreas = []*waveArea{}
 	for i := 0; i < 2; i++ {
 		t := waveToLeft
 		if i%2 == 0 {
@@ -230,8 +236,9 @@ func (g *Game) init() {
 		})
 	}
 	//init surfs
+	g.surfs = []*surf{}
 	for i := 0; i < (screenHeight*3/tileSize-surfStartOffset)/(g.surfInterval+1); i++ {
-		surfs = append(surfs, &surf{
+		g.surfs = append(g.surfs, &surf{
 			Y:         screenHeight - tileSize - (surfStartOffset*tileSize + i*(g.surfInterval+1)*tileSize),
 			LeftWidth: genSurfLeftWidth(g.surfGap),
 			Gap:       g.surfGap,
@@ -303,23 +310,23 @@ func (g *Game) Update() error {
 
 		//Add surfs
 		if g.cameraY%((g.surfInterval+1)*tileSize) < g.speed {
-			lastY := surfs[len(surfs)-1].Y
-			surfs = append(surfs, &surf{
+			lastY := g.surfs[len(g.surfs)-1].Y
+			g.surfs = append(g.surfs, &surf{
 				Y:         lastY - (g.surfInterval+1)*tileSize,
 				LeftWidth: genSurfLeftWidth(g.surfGap),
 				Gap:       g.surfGap,
 			})
 
 			rmCount := 0
-			for _, s := range surfs {
+			for _, s := range g.surfs {
 				if s.Y+g.cameraY > screenHeight {
 					rmCount++
 				}
 			}
-			surfs = surfs[rmCount:]
+			g.surfs = g.surfs[rmCount:]
 		}
 
-		if g.hit() {
+		if g.hit() && !muteki {
 			g.mode = ModeGameOver
 		}
 
@@ -373,7 +380,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			g.cameraY,
 			g.vx16,
 			len(g.waveAreas),
-			len(surfs),
+			len(g.surfs),
 		),
 	)
 }
@@ -397,7 +404,7 @@ func (g *Game) hit() bool {
 	}
 
 	//hit surf
-	for _, s := range surfs {
+	for _, s := range g.surfs {
 		sy0 := s.Y + g.cameraY
 		sy1 := sy0 + tileSize
 
@@ -495,14 +502,10 @@ type surf = struct {
 	Gap       int
 }
 
-var (
-	surfs []*surf
-)
-
 func (g *Game) drawSurfs(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op2 := &ebiten.DrawImageOptions{}
-	for _, s := range surfs {
+	for _, s := range g.surfs {
 		y := float64(s.Y + g.cameraY)
 
 		op.GeoM.Reset()
