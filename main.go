@@ -27,7 +27,7 @@ const (
 
 	tileSize = 32
 
-	surfOffset = 12
+	surfStartOffset = 24
 )
 
 var (
@@ -153,7 +153,7 @@ func (g *Game) isLeftJustPressed() bool {
 func (g *Game) init() {
 	g.counter = 0
 	g.x16 = (screenWidth/2 - playerWidth/2) * 16
-	g.y16 = (screenHeight - playerHeight - 64) * 16
+	g.y16 = (screenHeight - playerHeight - 96) * 16
 	g.cameraX = 0
 	g.cameraY = 0
 
@@ -199,9 +199,9 @@ func (g *Game) init() {
 		})
 	}
 	//init surfs
-	for i := 0; i < (screenHeight*3/tileSize-surfOffset)/(g.surfInterval+1); i++ {
+	for i := 0; i < (screenHeight*3/tileSize-surfStartOffset)/(g.surfInterval+1); i++ {
 		surfs = append(surfs, &surf{
-			Y:         screenHeight - tileSize - (surfOffset*tileSize + i*(g.surfInterval+1)*tileSize),
+			Y:         screenHeight - tileSize - (surfStartOffset*tileSize + i*(g.surfInterval+1)*tileSize),
 			LeftWidth: genSurfLeftWidth(g.surfGap),
 			Gap:       g.surfGap,
 		})
