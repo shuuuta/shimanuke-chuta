@@ -374,7 +374,7 @@ func (g *Game) setStage() {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	//g.drawWaves(screen)
+	g.drawWaves(screen)
 	g.drawSurfs(screen)
 
 	if g.mode == ModeStartMenu {
@@ -470,32 +470,34 @@ func (g *Game) drawPlayer(screen *ebiten.Image) {
 
 func (g *Game) drawWaves(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	op2 := &ebiten.DrawImageOptions{}
 	for _, w := range g.waveAreas {
-		op.GeoM.Reset()
-		op.GeoM.Translate(0, float64(w.Y+g.cameraY))
-		nw := ebiten.NewImage(waveAreaWidth, waveAreaHeight)
+		areaY := w.Y + g.cameraY
+		if areaY < -waveAreaHeight || areaY > screenHeight {
+			continue
+		}
+
 		for i := 0; i < waveAreaWidth/tileSize; i++ {
 			for j := 0; j < waveAreaHeight/tileSize; j++ {
-				op2.GeoM.Reset()
-				op2.GeoM.Translate(float64(i*tileSize), float64(j*tileSize))
-				switch w.WaveType {
-				case waveToLeft:
-					if g.counter%120 < 60 {
-						nw.DrawImage(TilesImage.SubImage(image.Rect(0, 0, tileSize, tileSize)).(*ebiten.Image), op2)
-					} else {
-						nw.DrawImage(TilesImage.SubImage(image.Rect(0, tileSize, tileSize, tileSize*2)).(*ebiten.Image), op2)
-					}
-				case waveToRight:
-					if g.counter%120 < 60 {
-						nw.DrawImage(TilesImage.SubImage(image.Rect(tileSize, 0, tileSize*2, tileSize)).(*ebiten.Image), op2)
-					} else {
-						nw.DrawImage(TilesImage.SubImage(image.Rect(tileSize, tileSize, tileSize*2, tileSize*2)).(*ebiten.Image), op2)
-					}
+				posY := areaY + j*tileSize
+				if posY < -tileSize || posY > screenHeight {
+					continue
 				}
+				posX := i * tileSize
+				op.GeoM.Reset()
+				op.GeoM.Translate(float64(posX), float64(posY))
+				x := 0
+				y := 0
+
+				if w.WaveType == waveToRight {
+					x = tileSize
+				}
+
+				if g.counter%120 > 60 {
+					y = tileSize
+				}
+				screen.DrawImage(TilesImage.SubImage(image.Rect(x, y, x+tileSize, y+tileSize)).(*ebiten.Image), op)
 			}
 		}
-		screen.DrawImage(nw, op)
 	}
 }
 
