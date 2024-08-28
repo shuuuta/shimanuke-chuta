@@ -375,7 +375,7 @@ func (g *Game) setStage() {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	//g.drawWaves(screen)
-	//g.drawSurfs(screen)
+	g.drawSurfs(screen)
 
 	if g.mode == ModeStartMenu {
 		g.drawStartMenu(screen)
@@ -526,39 +526,33 @@ type surf = struct {
 
 func (g *Game) drawSurfs(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	op2 := &ebiten.DrawImageOptions{}
 	for _, s := range g.surfs {
 		y := float64(s.Y + g.cameraY)
-
-		op.GeoM.Reset()
-		op.GeoM.Translate(0, y)
-		sl := ebiten.NewImage(s.LeftWidth*tileSize, tileSize)
+		if y < -tileSize || y > screenHeight {
+			continue
+		}
 
 		for i := 0; i < s.LeftWidth; i++ {
-			op2.GeoM.Reset()
-			op2.GeoM.Translate(float64(i*tileSize), 0)
-			if g.counter%60 < 30 {
-				sl.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, 0, tileSize*3, tileSize)).(*ebiten.Image), op2)
-			} else {
-				sl.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, tileSize, tileSize*3, tileSize*2)).(*ebiten.Image), op2)
+			op.GeoM.Reset()
+			op.GeoM.Translate(float64(i*tileSize), y)
+			x := tileSize * 2
+			y := 0
+			if g.counter%60 > 30 {
+				y = tileSize
 			}
+			screen.DrawImage(TilesImage.SubImage(image.Rect(x, y, x+tileSize, y+tileSize)).(*ebiten.Image), op)
 		}
-		screen.DrawImage(sl, op)
-
-		op.GeoM.Reset()
-		op.GeoM.Translate(float64(s.LeftWidth*tileSize+s.Gap*tileSize), y)
-		sr := ebiten.NewImage(screenWidth-s.LeftWidth*tileSize+s.Gap*tileSize, tileSize)
 
 		for i := 0; i < screenWidth/tileSize-s.LeftWidth-s.Gap; i++ {
-			op2.GeoM.Reset()
-			op2.GeoM.Translate(float64(i*tileSize), 0)
-			if g.counter%60 < 30 {
-				sr.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, 0, tileSize*3, tileSize)).(*ebiten.Image), op2)
-			} else {
-				sr.DrawImage(TilesImage.SubImage(image.Rect(tileSize*2, tileSize, tileSize*3, tileSize*2)).(*ebiten.Image), op2)
+			op.GeoM.Reset()
+			op.GeoM.Translate(float64(i*tileSize+s.LeftWidth*tileSize+s.Gap*tileSize), y)
+			x := tileSize * 2
+			y := 0
+			if g.counter%60 > 30 {
+				y = tileSize
 			}
+			screen.DrawImage(TilesImage.SubImage(image.Rect(x, y, x+tileSize, y+tileSize)).(*ebiten.Image), op)
 		}
-		screen.DrawImage(sr, op)
 	}
 }
 
