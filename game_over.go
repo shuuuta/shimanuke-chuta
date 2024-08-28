@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -8,6 +9,15 @@ import (
 )
 
 func (g *Game) drawGameOver(screen *ebiten.Image) {
+	title := g.location
+	afterTitle := "到達"
+	dist := fmt.Sprintf("%.1fkm", float64(g.travelDistance)/1000)
+
+	if title == "八丈島" {
+		title = "GAME OVER"
+		afterTitle = ""
+	}
+
 	op := &text.DrawOptions{}
 	op.GeoM.Translate(screenWidth/2, titleFontSize*3)
 	op.ColorScale.ScaleWithColor(color.White)
@@ -15,7 +25,7 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 	op.PrimaryAlign = text.AlignCenter
 	text.Draw(
 		screen,
-		g.location,
+		title,
 		&text.GoTextFace{
 			Source: k8x12sFont,
 			Size:   titleFontSize,
@@ -30,7 +40,22 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 	op.PrimaryAlign = text.AlignCenter
 	text.Draw(
 		screen,
-		"到達",
+		afterTitle,
+		&text.GoTextFace{
+			Source: misakiFont,
+			Size:   fontSize,
+		},
+		op,
+	)
+
+	op = &text.DrawOptions{}
+	op.GeoM.Translate(screenWidth/2, titleFontSize*4+fontSize*3)
+	op.ColorScale.ScaleWithColor(color.White)
+	op.LineSpacing = fontSize
+	op.PrimaryAlign = text.AlignCenter
+	text.Draw(
+		screen,
+		dist,
 		&text.GoTextFace{
 			Source: misakiFont,
 			Size:   fontSize,

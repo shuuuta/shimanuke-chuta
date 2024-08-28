@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	muteki = true
+	muteki = false
 	dev    = true
 )
 
@@ -65,7 +65,6 @@ func init() {
 const (
 	fontSize      = 24
 	titleFontSize = fontSize * 3
-	smallFontSize = fontSize / 0.8
 )
 
 var (
@@ -123,10 +122,11 @@ const (
 )
 
 type Game struct {
-	counter  int
-	mode     Mode
-	stages   Stages
-	location string
+	counter        int
+	mode           Mode
+	stages         Stages
+	location       string
+	travelDistance int
 
 	speed int
 
@@ -207,6 +207,7 @@ func (g *Game) isLeftJustPressed() bool {
 
 func (g *Game) init() {
 	g.counter = 0
+	g.travelDistance = 0
 	g.x16 = (screenWidth/2 - playerWidth/2) * 16
 	g.y16 = (screenHeight - playerHeight - 96) * 16
 	g.cameraX = 0
@@ -217,25 +218,67 @@ func (g *Game) init() {
 		Stage{
 			name:         "八丈島",
 			dist:         0,
-			speed:        4,
+			speed:        2,
 			surfGap:      8,
 			surfInterval: 7,
 		}, Stage{
 			name:         "御蔵島",
 			dist:         83,
-			speed:        4,
+			speed:        2,
 			surfGap:      7,
 			surfInterval: 7,
 		}, Stage{
 			name:         "三宅島",
 			dist:         106,
-			speed:        5,
+			speed:        3,
 			surfGap:      7,
 			surfInterval: 7,
 		}, Stage{
 			name:         "神津島",
 			dist:         133,
-			speed:        6,
+			speed:        3,
+			surfGap:      7,
+			surfInterval: 7,
+		}, Stage{
+			name:         "式根島",
+			dist:         143,
+			speed:        4,
+			surfGap:      7,
+			surfInterval: 7,
+		}, Stage{
+			name:         "新島",
+			dist:         150,
+			speed:        4,
+			surfGap:      7,
+			surfInterval: 7,
+		}, Stage{
+			name:         "利島",
+			dist:         160,
+			speed:        4,
+			surfGap:      7,
+			surfInterval: 7,
+		}, Stage{
+			name:         "大島",
+			dist:         176,
+			speed:        5,
+			surfGap:      7,
+			surfInterval: 7,
+		}, Stage{
+			name:         "千葉",
+			dist:         197,
+			speed:        5,
+			surfGap:      7,
+			surfInterval: 7,
+		}, Stage{
+			name:         "神奈川",
+			dist:         225,
+			speed:        5,
+			surfGap:      7,
+			surfInterval: 7,
+		}, Stage{
+			name:         "東京",
+			dist:         280,
+			speed:        5,
 			surfGap:      7,
 			surfInterval: 7,
 		},
@@ -282,6 +325,7 @@ func (g *Game) Update() error {
 		}
 	case ModeGame:
 		g.setStage()
+		g.travelDistance += g.speed * 20
 
 		g.countAfterClick += 1
 		g.cameraY += g.speed
@@ -363,7 +407,7 @@ func (g *Game) Update() error {
 func (g *Game) setStage() {
 	var s Stage
 	for _, v := range g.stages {
-		if v.dist*10 <= g.cameraY {
+		if v.dist*1000 <= g.travelDistance {
 			s = v
 		}
 	}
@@ -395,15 +439,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			fmt.Sprintf(
 				"Hit: %v, "+
 					"Y:%v, vx: %v\n"+
+					"dist: %vm, "+
 					"waves: %v, surfs: %v",
 				g.hit(),
 				g.cameraY,
 				g.vx16,
+				fmt.Sprintf("%.2fkm", float64(g.travelDistance)/1000),
 				len(g.waveAreas),
 				len(g.surfs),
 			),
 		)
-		ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.ActualTPS()))
+		ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.1f", ebiten.ActualTPS()))
 	}
 }
 
