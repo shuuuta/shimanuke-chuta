@@ -383,6 +383,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				len(g.surfs),
 			),
 		)
+		ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.ActualTPS()))
 	}
 }
 
