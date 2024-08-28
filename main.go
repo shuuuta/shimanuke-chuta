@@ -130,6 +130,9 @@ type Game struct {
 
 	speed int
 
+	// Input
+	touchIDs []ebiten.TouchID
+
 	// Counter
 	countAfterClick int
 
@@ -162,6 +165,9 @@ func (g *Game) isSelectJustPressed() bool {
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		return true
 	}
+	if len(g.touchIDs) > 0 {
+		return true
+	}
 	return false
 }
 
@@ -173,6 +179,12 @@ func (g *Game) isRightJustPressed() bool {
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) && x >= screenWidth/2 {
 		return true
 	}
+	if len(g.touchIDs) > 0 {
+		x, _ := ebiten.TouchPosition(g.touchIDs[0])
+		if x >= screenWidth/2 {
+			return true
+		}
+	}
 	return false
 }
 
@@ -183,6 +195,12 @@ func (g *Game) isLeftJustPressed() bool {
 	x, _ := ebiten.CursorPosition()
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) && x < screenWidth/2 {
 		return true
+	}
+	if len(g.touchIDs) > 0 {
+		x, _ := ebiten.TouchPosition(g.touchIDs[0])
+		if x < screenWidth/2 {
+			return true
+		}
 	}
 	return false
 }
@@ -255,6 +273,8 @@ func NewGame() ebiten.Game {
 
 func (g *Game) Update() error {
 	g.counter++
+	g.touchIDs = inpututil.AppendJustPressedTouchIDs(g.touchIDs[:0])
+
 	switch g.mode {
 	case ModeStartMenu:
 		if g.isSelectJustPressed() {
@@ -354,8 +374,8 @@ func (g *Game) setStage() {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.drawWaves(screen)
-	g.drawSurfs(screen)
+	//g.drawWaves(screen)
+	//g.drawSurfs(screen)
 
 	if g.mode == ModeStartMenu {
 		g.drawStartMenu(screen)
