@@ -534,7 +534,7 @@ func (g *Game) drawPlayer(screen *ebiten.Image) {
 	px0 := 0
 	py0 := 0
 	if g.countAfterClick < 30 {
-		px0 = int(math.Floor(float64(g.cameraY/g.speed/2%4))) * playerWidth
+		px0 = int(math.Floor(float64(g.cameraY/g.speed/5%4))) * playerWidth
 		py0 = g.shipDir * playerHeight
 	} else {
 		px0 = int(math.Floor(float64(g.cameraY/g.speed/10%4))) * playerWidth
