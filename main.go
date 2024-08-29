@@ -310,11 +310,29 @@ func (g *Game) init() {
 	}
 	//init surfs
 	g.surfs = []*surf{}
-	for i := 0; i < (screenHeight*3/tileSize-surfStartOffset)/(g.surfInterval+1); i++ {
+
+	initSurfsNum := int(math.Floor(float64(screenHeight / ((g.surfGap + 1) * surfHeight))))
+	if initSurfsNum < 0 {
+		initSurfsNum = 1
+	}
+	for i := 0; i < initSurfsNum; i++ {
+		s := g.stages[0]
+		y := -surfStartOffset * tileSize
+
+		if i > 0 {
+			lastY := g.surfs[len(g.surfs)-1].Y
+			for _, v := range g.stages {
+				if v.dist < lastY {
+					s = v
+				}
+			}
+			y = lastY - surfHeight - s.surfGap*tileSize
+		}
+
 		g.surfs = append(g.surfs, &surf{
-			Y:         screenHeight - tileSize - (surfStartOffset*tileSize + i*(g.surfInterval+1)*tileSize),
-			LeftWidth: genSurfLeftWidth(g.surfGap),
-			Gap:       g.surfGap,
+			Y:         y,
+			LeftWidth: genSurfLeftWidth(s.surfGap),
+			Gap:       s.surfGap,
 		})
 	}
 }
@@ -387,10 +405,16 @@ func (g *Game) Update() error {
 		//Add surfs
 		if g.cameraY%((g.surfInterval+1)*tileSize) < g.speed {
 			lastY := g.surfs[len(g.surfs)-1].Y
+			s := g.stages[0]
+			for _, v := range g.stages {
+				if v.dist < lastY {
+					s = v
+				}
+			}
 			g.surfs = append(g.surfs, &surf{
-				Y:         lastY - (g.surfInterval+1)*tileSize,
-				LeftWidth: genSurfLeftWidth(g.surfGap),
-				Gap:       g.surfGap,
+				Y:         lastY - surfHeight - s.surfInterval*tileSize,
+				LeftWidth: genSurfLeftWidth(s.surfGap),
+				Gap:       s.surfGap,
 			})
 
 			rmCount := 0
