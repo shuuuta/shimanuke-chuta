@@ -16,12 +16,11 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-func floorDiv(x, y int) int {
-	d := x / y
-	if d*y == x || x >= 0 {
-		return d
-	}
-	return d - 1
+func getTravelDistance(y16 int) int {
+	return y16 / 16 * 20
+}
+func pxToTravelDistance(y int) int {
+	return y * 20
 }
 
 var (
@@ -133,11 +132,10 @@ const (
 )
 
 type Game struct {
-	counter        int
-	mode           Mode
-	stages         Stages
-	location       string
-	travelDistance int
+	counter  int
+	mode     Mode
+	stages   Stages
+	location string
 
 	speed int
 
@@ -218,7 +216,6 @@ func (g *Game) isLeftJustPressed() bool {
 
 func (g *Game) init() {
 	g.counter = 0
-	g.travelDistance = 0
 	g.x16 = (screenWidth/2 - playerWidth/2) * 16
 	g.y16 = (screenHeight - playerHeight - tileSize*4) * 16
 	g.cameraX = 0
@@ -230,68 +227,68 @@ func (g *Game) init() {
 			name:         "八丈島",
 			dist:         0,
 			speed:        2,
-			surfGap:      8,
-			surfInterval: 7,
+			surfGap:      9,
+			surfInterval: 12,
 		}, Stage{
 			name:         "御蔵島",
 			dist:         83,
 			speed:        2,
-			surfGap:      7,
-			surfInterval: 7,
+			surfGap:      8,
+			surfInterval: 12,
 		}, Stage{
 			name:         "三宅島",
 			dist:         106,
 			speed:        3,
-			surfGap:      7,
-			surfInterval: 7,
+			surfGap:      8,
+			surfInterval: 12,
 		}, Stage{
 			name:         "神津島",
 			dist:         133,
 			speed:        3,
-			surfGap:      7,
-			surfInterval: 7,
+			surfGap:      8,
+			surfInterval: 11,
 		}, Stage{
 			name:         "式根島",
 			dist:         143,
 			speed:        4,
-			surfGap:      7,
-			surfInterval: 7,
+			surfGap:      8,
+			surfInterval: 11,
 		}, Stage{
 			name:         "新島",
 			dist:         150,
 			speed:        4,
-			surfGap:      7,
-			surfInterval: 7,
+			surfGap:      8,
+			surfInterval: 10,
 		}, Stage{
 			name:         "利島",
 			dist:         160,
-			speed:        4,
-			surfGap:      7,
-			surfInterval: 7,
+			speed:        5,
+			surfGap:      8,
+			surfInterval: 10,
 		}, Stage{
 			name:         "大島",
 			dist:         176,
 			speed:        5,
 			surfGap:      7,
-			surfInterval: 7,
+			surfInterval: 10,
 		}, Stage{
 			name:         "千葉",
 			dist:         197,
 			speed:        5,
 			surfGap:      7,
-			surfInterval: 7,
+			surfInterval: 9,
 		}, Stage{
 			name:         "神奈川",
 			dist:         225,
 			speed:        5,
 			surfGap:      7,
-			surfInterval: 7,
+			surfInterval: 8,
 		}, Stage{
 			name:         "東京",
 			dist:         280,
-			speed:        5,
+			speed:        6,
 			surfGap:      7,
-			surfInterval: 7,
+			surfInterval: 8,
 		},
 	}
 	g.setStage()
@@ -322,7 +319,7 @@ func (g *Game) init() {
 		if i > 0 {
 			lastY := g.surfs[len(g.surfs)-1].Y
 			for _, v := range g.stages {
-				if v.dist < lastY {
+				if v.dist*1000 < pxToTravelDistance(-lastY) {
 					s = v
 				}
 			}
@@ -354,7 +351,6 @@ func (g *Game) Update() error {
 		}
 	case ModeGame:
 		g.setStage()
-		g.travelDistance += g.speed * 20
 
 		g.countAfterClick += 1
 		g.cameraY += g.speed
@@ -407,7 +403,8 @@ func (g *Game) Update() error {
 			lastY := g.surfs[len(g.surfs)-1].Y
 			s := g.stages[0]
 			for _, v := range g.stages {
-				if v.dist < lastY {
+				if v.dist*1000 < pxToTravelDistance(-lastY) {
+					fmt.Printf("stage: %v, lastY: %v, traveldist: %v\n", v.name, lastY, getTravelDistance(-lastY))
 					s = v
 				}
 			}
@@ -442,7 +439,7 @@ func (g *Game) Update() error {
 func (g *Game) setStage() {
 	var s Stage
 	for _, v := range g.stages {
-		if v.dist*1000 <= g.travelDistance {
+		if v.dist*1000 <= getTravelDistance(g.y16) {
 			s = v
 		}
 	}
@@ -479,7 +476,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				g.hit(),
 				g.cameraY,
 				g.vx16,
-				fmt.Sprintf("%.2fkm", float64(g.travelDistance)/1000),
+				fmt.Sprintf("%.2fkm", float64(getTravelDistance(g.y16)/1000)),
 				len(g.waveAreas),
 				len(g.surfs),
 			),

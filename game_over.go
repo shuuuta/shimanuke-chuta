@@ -11,7 +11,7 @@ import (
 func (g *Game) drawGameOver(screen *ebiten.Image) {
 	title := g.location
 	afterTitle := "到達"
-	dist := fmt.Sprintf("%.1fkm", float64(g.travelDistance)/1000)
+	dist := fmt.Sprintf("%.1fkm", float64(getTravelDistance(g.y16))/1000)
 
 	if title == "八丈島" {
 		title = "GAME OVER"
