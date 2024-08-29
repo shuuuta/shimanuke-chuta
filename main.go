@@ -44,7 +44,7 @@ const (
 	surfWidth  = 64
 	surfHeight = 64
 
-	surfStartOffset = 32
+	surfStartOffset = 48
 )
 
 var (
@@ -298,7 +298,7 @@ func (g *Game) init() {
 
 	//init waves
 	g.waveAreas = []*waveArea{}
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		t := waveToLeft
 		if i%2 == 0 {
 			t = waveToRight
