@@ -404,7 +404,6 @@ func (g *Game) Update() error {
 			s := g.stages[0]
 			for _, v := range g.stages {
 				if v.dist*1000 < pxToTravelDistance(-lastY) {
-					fmt.Printf("stage: %v, lastY: %v, traveldist: %v\n", v.name, lastY, getTravelDistance(-lastY))
 					s = v
 				}
 			}
