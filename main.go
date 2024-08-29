@@ -612,30 +612,37 @@ type surf = struct {
 }
 
 func (g *Game) drawSurfs(screen *ebiten.Image) {
+	const surfX1 = 128
+	const surfX2 = 160
+	const surfX3 = 224
+
 	op := &ebiten.DrawImageOptions{}
-	sx := surfWidth * 2
+
 	sy := 0
-	if g.counter%60 > 30 {
+	if g.counter%40 > 20 {
 		sy = surfHeight
 	}
+
 	for _, s := range g.surfs {
 		y := float64(s.Y + g.cameraY)
 		if y < -surfHeight || y > screenHeight {
 			continue
 		}
 
-		for i := 0; i < s.LeftWidth; i++ {
-			if i%2 == 1 {
-				continue
+		for i := s.LeftWidth; i >= -1; i = i - 2 {
+			sx := surfX2
+			if i == s.LeftWidth {
+				sx = surfX3
 			}
 			op.GeoM.Reset()
-			op.GeoM.Translate(float64(s.LeftWidth*tileSize-tileSize*(i+2)), y)
+			op.GeoM.Translate(float64(i*tileSize), y)
 			screen.DrawImage(TilesImage.SubImage(image.Rect(sx, sy, sx+surfWidth, sy+surfHeight)).(*ebiten.Image), op)
 		}
 
 		for i := 0; i < screenWidth/tileSize-s.LeftWidth-s.Gap; i++ {
-			if i%2 == 1 {
-				continue
+			sx := surfX2
+			if i == 0 {
+				sx = surfX1
 			}
 			op.GeoM.Reset()
 			op.GeoM.Translate(float64(i*tileSize+s.LeftWidth*tileSize+s.Gap*tileSize), y)
