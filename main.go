@@ -16,8 +16,16 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
+func floorDiv(x, y int) int {
+	d := x / y
+	if d*y == x || x >= 0 {
+		return d
+	}
+	return d - 1
+}
+
 var (
-	muteki = false
+	muteki = true
 	dev    = true
 )
 
@@ -28,10 +36,13 @@ const (
 	waveAreaWidth  = screenWidth
 	waveAreaHeight = screenHeight
 
+	tileSize = 32
+
 	playerWidth  = 64
 	playerHeight = 64
 
-	tileSize = 32
+	surfWidth  = 64
+	surfHeight = 64
 
 	surfStartOffset = 32
 )
@@ -474,7 +485,7 @@ func (g *Game) hit() bool {
 	//hit surf
 	for _, s := range g.surfs {
 		sy0 := s.Y + g.cameraY
-		sy1 := sy0 + tileSize
+		sy1 := sy0 + surfHeight
 
 		rx0 := 0
 		rx1 := s.LeftWidth * tileSize
@@ -517,6 +528,9 @@ func (g *Game) drawPlayer(screen *ebiten.Image) {
 }
 
 func (g *Game) drawWaves(screen *ebiten.Image) {
+	const waveWidth = 64
+	const waveHeight = 64
+
 	op := &ebiten.DrawImageOptions{}
 	for _, w := range g.waveAreas {
 		areaY := w.Y + g.cameraY
@@ -527,23 +541,23 @@ func (g *Game) drawWaves(screen *ebiten.Image) {
 		for i := 0; i < waveAreaWidth/tileSize; i++ {
 			for j := 0; j < waveAreaHeight/tileSize; j++ {
 				posY := areaY + j*tileSize
-				if posY < -tileSize || posY > screenHeight {
+				if posY < -waveHeight || posY > screenHeight {
 					continue
 				}
-				posX := i * tileSize
+				posX := i * waveWidth
 				op.GeoM.Reset()
 				op.GeoM.Translate(float64(posX), float64(posY))
 				x := 0
 				y := 0
 
 				if w.WaveType == waveToRight {
-					x = tileSize
+					x = tileSize * 2
 				}
 
 				if g.counter%120 > 60 {
-					y = tileSize
+					y = waveHeight
 				}
-				screen.DrawImage(TilesImage.SubImage(image.Rect(x, y, x+tileSize, y+tileSize)).(*ebiten.Image), op)
+				screen.DrawImage(TilesImage.SubImage(image.Rect(x, y, x+waveWidth, y+waveHeight)).(*ebiten.Image), op)
 			}
 		}
 	}
@@ -576,32 +590,33 @@ type surf = struct {
 
 func (g *Game) drawSurfs(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
+	sx := surfWidth * 2
+	sy := 0
+	if g.counter%60 > 30 {
+		sy = surfHeight
+	}
 	for _, s := range g.surfs {
 		y := float64(s.Y + g.cameraY)
-		if y < -tileSize || y > screenHeight {
+		if y < -surfHeight || y > screenHeight {
 			continue
 		}
 
 		for i := 0; i < s.LeftWidth; i++ {
-			op.GeoM.Reset()
-			op.GeoM.Translate(float64(i*tileSize), y)
-			x := tileSize * 2
-			y := 0
-			if g.counter%60 > 30 {
-				y = tileSize
+			if i%2 == 1 {
+				continue
 			}
-			screen.DrawImage(TilesImage.SubImage(image.Rect(x, y, x+tileSize, y+tileSize)).(*ebiten.Image), op)
+			op.GeoM.Reset()
+			op.GeoM.Translate(float64(s.LeftWidth*tileSize-tileSize*(i+2)), y)
+			screen.DrawImage(TilesImage.SubImage(image.Rect(sx, sy, sx+surfWidth, sy+surfHeight)).(*ebiten.Image), op)
 		}
 
 		for i := 0; i < screenWidth/tileSize-s.LeftWidth-s.Gap; i++ {
+			if i%2 == 1 {
+				continue
+			}
 			op.GeoM.Reset()
 			op.GeoM.Translate(float64(i*tileSize+s.LeftWidth*tileSize+s.Gap*tileSize), y)
-			x := tileSize * 2
-			y := 0
-			if g.counter%60 > 30 {
-				y = tileSize
-			}
-			screen.DrawImage(TilesImage.SubImage(image.Rect(x, y, x+tileSize, y+tileSize)).(*ebiten.Image), op)
+			screen.DrawImage(TilesImage.SubImage(image.Rect(sx, sy, sx+surfWidth, sy+surfHeight)).(*ebiten.Image), op)
 		}
 	}
 }
