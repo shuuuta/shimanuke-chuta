@@ -30,7 +30,7 @@ func (g *Game) drawStartMenu(screen *ebiten.Image) {
 	op.PrimaryAlign = text.AlignCenter
 	text.Draw(
 		screen,
-		"- PRESS SPACE KEY -",
+		"- TAP OR PRESS SPACE KEY -",
 		&text.GoTextFace{
 			Source: misakiFont,
 			Size:   fontSize,
