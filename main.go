@@ -428,7 +428,7 @@ func (g *Game) Update() error {
 		}
 
 	case ModeGameOver:
-		if g.counter > 120 && g.isSelectJustPressed() {
+		if g.counter > 30 && g.isSelectJustPressed() {
 			g.counter = 0
 			g.init()
 			g.mode = ModeStartMenu
