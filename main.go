@@ -29,8 +29,8 @@ var (
 )
 
 const (
-	screenWidth  = 480
-	screenHeight = 640
+	screenWidth  = 480.0
+	screenHeight = 640.0
 
 	waveAreaWidth  = screenWidth
 	waveAreaHeight = screenHeight
@@ -518,7 +518,7 @@ func (g *Game) hit() bool {
 			if x0 < rx1 && rx0 < x1 {
 				return true
 			}
-			if x0 < lx1 && lx0 < x1 {
+			if x0 < int(lx1) && lx0 < x1 {
 				return true
 			}
 		}
@@ -550,8 +550,10 @@ func (g *Game) drawPlayer(screen *ebiten.Image) {
 }
 
 func (g *Game) drawWaves(screen *ebiten.Image) {
-	const waveWidth = 64
-	const waveHeight = 64
+	const waveWidth = 64.0
+	const waveHeight = 64.0
+	const waveX1 = 0
+	const waveX2 = waveWidth
 
 	op := &ebiten.DrawImageOptions{}
 	for _, w := range g.waveAreas {
@@ -560,24 +562,23 @@ func (g *Game) drawWaves(screen *ebiten.Image) {
 			continue
 		}
 
-		for i := 0; i < waveAreaWidth/tileSize; i++ {
-			for j := 0; j < waveAreaHeight/tileSize; j++ {
-				posY := areaY + j*tileSize
-				if posY < -waveHeight || posY > screenHeight {
-					continue
-				}
+		for i := 0; i < int(math.Ceil(waveAreaWidth/waveWidth)); i++ {
+			for j := 0; j < int(math.Ceil(waveAreaHeight/waveHeight)); j++ {
 				posX := i * waveWidth
+				posY := areaY + j*waveHeight
 				op.GeoM.Reset()
 				op.GeoM.Translate(float64(posX), float64(posY))
-				x := 0
+				x := waveX1
 				y := 0
 
 				if w.WaveType == waveToRight {
-					x = tileSize * 2
+					x = waveX2
 				}
 
-				if g.counter%120 > 60 {
+				if g.counter%180 < 60 {
 					y = waveHeight
+				} else if g.counter%180 < 120 {
+					y = waveHeight * 2
 				}
 				screen.DrawImage(TilesImage.SubImage(image.Rect(x, y, x+waveWidth, y+waveHeight)).(*ebiten.Image), op)
 			}
