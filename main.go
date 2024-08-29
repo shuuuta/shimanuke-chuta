@@ -28,8 +28,8 @@ const (
 	waveAreaWidth  = screenWidth
 	waveAreaHeight = screenHeight
 
-	playerWidth  = 32
-	playerHeight = 32
+	playerWidth  = 64
+	playerHeight = 64
 
 	tileSize = 32
 
@@ -497,13 +497,15 @@ func (g *Game) drawPlayer(screen *ebiten.Image) {
 	img := ebiten.NewImage(playerWidth, playerHeight)
 	op := &ebiten.DrawImageOptions{}
 
+	px0 := 0
+	py0 := 0
 	if g.countAfterClick < 30 {
-		px := int(math.Floor(float64(g.cameraY / g.speed / 2 % 4)))
-		img.DrawImage(PlayerImage.SubImage(image.Rect(tileSize*px, tileSize*g.shipDir, tileSize*(px+1), tileSize*(g.shipDir+1))).(*ebiten.Image), nil)
+		px0 = int(math.Floor(float64(g.cameraY/g.speed/2%4))) * playerWidth
+		py0 = g.shipDir * playerHeight
 	} else {
-		px := int(math.Floor(float64(g.cameraY / g.speed / 10 % 4)))
-		img.DrawImage(PlayerImage.SubImage(image.Rect(tileSize*px, 0, tileSize*(px+1), tileSize)).(*ebiten.Image), nil)
+		px0 = int(math.Floor(float64(g.cameraY/g.speed/10%4))) * playerWidth
 	}
+	img.DrawImage(PlayerImage.SubImage(image.Rect(px0, py0, px0+playerWidth, py0+playerHeight)).(*ebiten.Image), nil)
 
 	op.GeoM.Translate(-float64(playerWidth)/2.0, -float64(playerHeight)/2.0)
 	op.GeoM.Rotate(float64(g.vx16) / 96.0 * math.Pi / 6)
