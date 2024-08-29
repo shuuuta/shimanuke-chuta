@@ -24,7 +24,7 @@ func pxToTravelDistance(y int) int {
 }
 
 var (
-	muteki = true
+	muteki = false
 	dev    = true
 )
 
@@ -271,18 +271,18 @@ func (g *Game) init() {
 			speed:        5,
 			surfGap:      7,
 			surfInterval: 10,
-		}, Stage{
-			name:         "千葉",
-			dist:         197,
-			speed:        5,
-			surfGap:      7,
-			surfInterval: 9,
-		}, Stage{
-			name:         "神奈川",
-			dist:         225,
-			speed:        5,
-			surfGap:      7,
-			surfInterval: 8,
+			//}, Stage{
+			//	name:         "千葉",
+			//	dist:         197,
+			//	speed:        5,
+			//	surfGap:      7,
+			//	surfInterval: 9,
+			//}, Stage{
+			//	name:         "神奈川",
+			//	dist:         225,
+			//	speed:        5,
+			//	surfGap:      7,
+			//	surfInterval: 8,
 		}, Stage{
 			name:         "東京",
 			dist:         280,
@@ -424,11 +424,13 @@ func (g *Game) Update() error {
 		}
 
 		if g.hit() && !muteki {
+			g.counter = 0
 			g.mode = ModeGameOver
 		}
 
 	case ModeGameOver:
-		if g.isSelectJustPressed() {
+		if g.counter > 120 && g.isSelectJustPressed() {
+			g.counter = 0
 			g.init()
 			g.mode = ModeStartMenu
 		}

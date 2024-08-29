@@ -13,8 +13,13 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 	afterTitle := "到達"
 	dist := fmt.Sprintf("%.1fkm", float64(getTravelDistance(g.y16))/1000)
 
-	if title == "八丈島" {
-		title = "GAME OVER"
+	if title == g.stages[0].name {
+		title = "島抜け失敗"
+		afterTitle = ""
+	}
+
+	if title == g.stages[len(g.stages)-1].name {
+		title = "島抜け成功!!"
 		afterTitle = ""
 	}
 
