@@ -1,16 +1,31 @@
-<!DOCTYPE html>
-<html>
-<head>
+<html lang="ja">
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# website: http://ogp.me/ns/website#">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Game</title>
+	<meta name="format-detection" content="telephone=no, email=no, address=no">
+	<title>島抜けのチュータ</title>
 
 	<style>
 		body {
 			font-family: Arial, Helvetica, sans-serif;
 		}
+		.siteWrapper {
+			min-height: 100lvh;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.header {
+			width: 98vw;
+			max-width: 530px;
+			margin: auto;
+		}
+		.title {
+			text-align: center;
+		}
 
 		#game-container {
+			flex: 1;
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -19,24 +34,30 @@
 
 		#game {
 			background-color: black;
-
 			/* To control the "window size", edit here. */
 			width: 100%;
 			max-width: 480px;
 			max-height: 98svh;
-			aspect-ratio: 6 / 9;
+			aspect-ratio: 480 / 640;
 		}
 	</style>
 </head>
 <body>
-
-	<h1>Game</h1>
-
-	<p>You can design this page by editing index.html.</p>
-
-	<div id="game-container">
-		<iframe id="game" src="game.html" allow="autoplay" frameborder="0" allow="autoplay"></iframe>
+	<div class="siteWrapper">
+		<header class="header">
+			<h1 class="title">島抜けのチュータ</h1>
+			<div class="desc">
+				<p>八丈島に島流にあったチュータは小さな舟を漕いで島抜けを目指します。</p>
+				<ul>
+					<li>画面外に出るか、高波に当たるとゲームオーバー。</li>
+					<li>画面の右をタップするか、→キーで右へ。</li>
+					<li>画面の左をタップするか、←キーで左へ。</li>
+				</ul>
+			</div>
+		</header>
+		<div id="game-container">
+			<iframe id="game" src="game.html" allow="autoplay" frameborder="0" allow="autoplay"></iframe>
+		</div>
 	</div>
-
 </body>
 </html>
