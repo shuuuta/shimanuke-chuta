@@ -33,7 +33,7 @@ const (
 
 	tileSize = 32
 
-	surfStartOffset = 24
+	surfStartOffset = 32
 )
 
 var (
@@ -209,7 +209,7 @@ func (g *Game) init() {
 	g.counter = 0
 	g.travelDistance = 0
 	g.x16 = (screenWidth/2 - playerWidth/2) * 16
-	g.y16 = (screenHeight - playerHeight - 96) * 16
+	g.y16 = (screenHeight - playerHeight - tileSize*4) * 16
 	g.cameraX = 0
 	g.cameraY = 0
 
