@@ -8,6 +8,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
+func (g *Game) updateGameOver() {
+	if g.counter > 30 && g.isSelectJustPressed() {
+		g.counter = 0
+		g.init()
+		g.mode = ModeStartMenu
+	}
+}
+
 func (g *Game) drawGameOver(screen *ebiten.Image) {
 	title := g.location
 	afterTitle := "到達"
