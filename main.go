@@ -527,7 +527,6 @@ func (g *Game) hit() bool {
 }
 
 func (g *Game) drawPlayer(screen *ebiten.Image) {
-	img := ebiten.NewImage(playerWidth, playerHeight)
 	op := &ebiten.DrawImageOptions{}
 
 	px0 := 0
@@ -538,7 +537,6 @@ func (g *Game) drawPlayer(screen *ebiten.Image) {
 	} else {
 		px0 = int(math.Floor(float64(g.cameraY/g.speed/10%4))) * playerWidth
 	}
-	img.DrawImage(PlayerImage.SubImage(image.Rect(px0, py0, px0+playerWidth, py0+playerHeight)).(*ebiten.Image), nil)
 
 	op.GeoM.Translate(-float64(playerWidth)/2.0, -float64(playerHeight)/2.0)
 	op.GeoM.Rotate(float64(g.vx16) / 96.0 * math.Pi / 6)
@@ -546,7 +544,7 @@ func (g *Game) drawPlayer(screen *ebiten.Image) {
 	op.GeoM.Translate(float64(g.x16/16)-float64(g.cameraX), float64(g.y16/16)-float64(g.cameraY))
 	op.Filter = ebiten.FilterLinear
 
-	screen.DrawImage(img, op)
+	screen.DrawImage(PlayerImage.SubImage(image.Rect(px0, py0, px0+playerWidth, py0+playerHeight)).(*ebiten.Image), op)
 }
 
 func (g *Game) drawWaves(screen *ebiten.Image) {
