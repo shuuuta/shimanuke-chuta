@@ -15,7 +15,7 @@ func (g *Game) drawStartMenu(screen *ebiten.Image) {
 	op.PrimaryAlign = text.AlignCenter
 	text.Draw(
 		screen,
-		"島抜けのチュータ",
+		"島抜けチュータ",
 		&text.GoTextFace{
 			Source: k8x12sFont,
 			Size:   titleFontSize,

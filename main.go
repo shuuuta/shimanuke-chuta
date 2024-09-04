@@ -673,7 +673,7 @@ func sampleLog(screen *ebiten.Image, message string) {
 
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Hello, world!")
+	ebiten.SetWindowTitle("島抜けチュータ")
 	if err := ebiten.RunGame(NewGame()); err != nil {
 		log.Fatal(err)
 	}
