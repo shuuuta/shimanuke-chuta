@@ -25,7 +25,7 @@ func pxToTravelDistance(y int) int {
 
 var (
 	muteki = false
-	dev    = true
+	dev    = false
 )
 
 const (
