@@ -8,8 +8,12 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
+const (
+	gameOverWait = 30
+)
+
 func (g *Game) updateGameOver() {
-	if g.counter > 30 && g.isSelectJustPressed() {
+	if g.counter > gameOverWait && g.isSelectJustPressed() {
 		g.counter = 0
 		g.init()
 		g.mode = ModeStartMenu
@@ -75,4 +79,21 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 		},
 		op,
 	)
+
+	if g.counter > gameOverWait && g.counter%120 < 90 {
+		op = &text.DrawOptions{}
+		op.GeoM.Translate(screenWidth/2, titleFontSize*4+fontSize*6)
+		op.ColorScale.ScaleWithColor(color.White)
+		op.LineSpacing = fontSize
+		op.PrimaryAlign = text.AlignCenter
+		text.Draw(
+			screen,
+			"Tap to start menu",
+			&text.GoTextFace{
+				Source: misakiFont,
+				Size:   fontSize,
+			},
+			op,
+		)
+	}
 }
