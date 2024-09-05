@@ -74,8 +74,9 @@ func init() {
 }
 
 const (
-	fontSize      = 24
-	titleFontSize = fontSize * 3
+	fontSize       = 24
+	titleFontSize  = fontSize * 3
+	middleFontSize = fontSize * 1.8
 )
 
 var (

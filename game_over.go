@@ -35,8 +35,10 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 		afterTitle = ""
 	}
 
+	textY := 128.0
+
 	op := &text.DrawOptions{}
-	op.GeoM.Translate(screenWidth/2, titleFontSize*3)
+	op.GeoM.Translate(screenWidth/2, textY)
 	op.ColorScale.ScaleWithColor(color.White)
 	op.LineSpacing = titleFontSize
 	op.PrimaryAlign = text.AlignCenter
@@ -50,8 +52,10 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 		op,
 	)
 
+	textY += titleFontSize + 24
+
 	op = &text.DrawOptions{}
-	op.GeoM.Translate(screenWidth/2, titleFontSize*4+fontSize)
+	op.GeoM.Translate(screenWidth/2, textY)
 	op.ColorScale.ScaleWithColor(color.White)
 	op.LineSpacing = fontSize
 	op.PrimaryAlign = text.AlignCenter
@@ -65,24 +69,28 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 		op,
 	)
 
+	textY += fontSize + 24
+
 	op = &text.DrawOptions{}
-	op.GeoM.Translate(screenWidth/2, titleFontSize*4+fontSize*3)
+	op.GeoM.Translate(screenWidth/2, textY)
 	op.ColorScale.ScaleWithColor(color.White)
-	op.LineSpacing = fontSize * 1.8
+	op.LineSpacing = middleFontSize
 	op.PrimaryAlign = text.AlignCenter
 	text.Draw(
 		screen,
 		dist,
 		&text.GoTextFace{
 			Source: misakiFont,
-			Size:   fontSize * 1.8,
+			Size:   middleFontSize,
 		},
 		op,
 	)
 
 	if g.counter > gameOverWait && g.counter%120 < 90 {
+		textY += middleFontSize + 64
+
 		op = &text.DrawOptions{}
-		op.GeoM.Translate(screenWidth/2, titleFontSize*4+fontSize*6)
+		op.GeoM.Translate(screenWidth/2, textY)
 		op.ColorScale.ScaleWithColor(color.White)
 		op.LineSpacing = fontSize
 		op.PrimaryAlign = text.AlignCenter
