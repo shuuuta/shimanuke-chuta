@@ -68,14 +68,14 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 	op = &text.DrawOptions{}
 	op.GeoM.Translate(screenWidth/2, titleFontSize*4+fontSize*3)
 	op.ColorScale.ScaleWithColor(color.White)
-	op.LineSpacing = fontSize
+	op.LineSpacing = fontSize * 1.8
 	op.PrimaryAlign = text.AlignCenter
 	text.Draw(
 		screen,
 		dist,
 		&text.GoTextFace{
 			Source: misakiFont,
-			Size:   fontSize,
+			Size:   fontSize * 1.8,
 		},
 		op,
 	)
