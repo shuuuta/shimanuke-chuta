@@ -17,7 +17,7 @@ import (
 )
 
 func getTravelDistance(y16 int) int {
-	return y16 / 16 * 20
+	return (y16 - playerPositionY) / 16 * 20
 }
 func pxToTravelDistance(y int) int {
 	return y * 20
@@ -37,8 +37,9 @@ const (
 
 	tileSize = 32
 
-	playerWidth  = 64
-	playerHeight = 64
+	playerWidth     = 64
+	playerHeight    = 64
+	playerPositionY = (screenHeight - playerHeight - tileSize*4) * 16
 
 	surfWidth  = 64
 	surfHeight = 64
@@ -217,7 +218,7 @@ func (g *Game) isLeftJustPressed() bool {
 func (g *Game) init() {
 	g.counter = 0
 	g.x16 = (screenWidth/2 - playerWidth/2) * 16
-	g.y16 = (screenHeight - playerHeight - tileSize*4) * 16
+	g.y16 = playerPositionY
 	g.cameraX = 0
 	g.cameraY = 0
 
