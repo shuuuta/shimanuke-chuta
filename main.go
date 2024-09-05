@@ -455,6 +455,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	if g.mode == ModeGame {
+		g.drawGameScreen(screen)
 		g.drawPlayer(screen)
 	}
 
@@ -468,7 +469,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			fmt.Sprintf(
 				"Hit: %v, "+
 					"Y:%v, vx: %v\n"+
-					"dist: %vm, "+
+					"dist: %v, "+
 					"waves: %v, surfs: %v",
 				g.hit(),
 				g.cameraY,
@@ -541,6 +542,23 @@ func (g *Game) drawPlayer(screen *ebiten.Image) {
 	op.Filter = ebiten.FilterLinear
 
 	screen.DrawImage(PlayerImage.SubImage(image.Rect(px0, py0, px0+playerWidth, py0+playerHeight)).(*ebiten.Image), op)
+}
+
+func (g *Game) drawGameScreen(screen *ebiten.Image) {
+	op := &text.DrawOptions{}
+	op.GeoM.Translate(screenWidth/2, 16)
+	op.ColorScale.ScaleWithColor(color.White)
+	op.LineSpacing = fontSize
+	op.PrimaryAlign = text.AlignCenter
+	text.Draw(
+		screen,
+		fmt.Sprintf("%.1fkm", float64(getTravelDistance(g.y16))/1000),
+		&text.GoTextFace{
+			Source: misakiFont,
+			Size:   fontSize,
+		},
+		op,
+	)
 }
 
 func (g *Game) drawWaves(screen *ebiten.Image) {
