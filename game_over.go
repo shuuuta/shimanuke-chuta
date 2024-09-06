@@ -6,6 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
@@ -21,6 +22,8 @@ func (g *Game) updateGameOver() {
 }
 
 func (g *Game) drawGameOver(screen *ebiten.Image) {
+	vector.DrawFilledRect(screen, 0, 0, screenWidth, screenHeight, color.RGBA{0, 0, 0, 50}, false)
+
 	title := g.location
 	afterTitle := "到達"
 	dist := fmt.Sprintf("%.1fkm", float64(getTravelDistance(g.y16))/1000)
