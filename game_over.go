@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	gameOverWait = 30
+	gameOverWait = 90
 )
 
 func (g *Game) updateGameOver() {
@@ -89,7 +89,7 @@ func (g *Game) drawGameOver(screen *ebiten.Image) {
 		op,
 	)
 
-	if g.counter > gameOverWait && g.counter%120 < 90 {
+	if g.counter > gameOverWait && (g.counter-gameOverWait)%100 < 50 {
 		textY += middleFontSize + 64
 
 		op = &text.DrawOptions{}
