@@ -22,7 +22,7 @@ var distFiles = []string{
 	"game.html",
 	"game.wasm",
 	"wasm_exec.js",
-	"favicon.ico",
+	//"favicon.ico",
 	// ...
 }
 
